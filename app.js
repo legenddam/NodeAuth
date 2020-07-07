@@ -9,7 +9,9 @@ var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
 var multer = require('multer');
 var session = require('express-session');
-var expressValidator = require('express-validator');
+
+//var expressValidator = require('express-validator');
+
 var flash = require('connect-flash');
 var mongo = require('mongodb');
 var db = require('mongoose');
@@ -23,11 +25,11 @@ var app = express();
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
-var upload = multer({ dest: 'uploads/' }) //Handule Uploads
+var upload = multer({ dest: './uploads/' }) //Handule Uploads
 
 app.use(logger('dev'));
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
