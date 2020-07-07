@@ -4,6 +4,16 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
+var bodyParser = require('body-parser');
+var passport = require('passport');
+var LocalStrategy = require('passport-local').Strategy;
+var multer = require('multer');
+var session = require('express-session');
+var expressValidator = require('express-validator');
+var flash = require('connect-flash');
+var mongo = require('mongodb');
+var db = require('mongoose');
+
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 
@@ -13,11 +23,51 @@ var app = express();
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
+var upload = multer({ dest: 'uploads/' }) //Handule Uploads
+
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+
+//Handle Sessions
+app.use(session({
+  secret : 'secret',
+  saveUninitialized : true,
+  resave : true
+}));
+
+//Passport
+app.use(passport.initialize());
+app.use(passport.session());
+
+//Validator
+/*
+app.use(expressValidator({
+  errorFormatter: function(param, msg, value) {
+      var namespace = param.split('.')
+      , root    = namespace.shift()
+      , formParam = root;
+
+    while(namespace.length) {
+      formParam += '[' + namespace.shift() + ']';
+    }
+    return {
+      param : formParam,
+      msg   : msg,
+      value : value
+    };
+  }
+})); 
+*/
+//ExpressMessages
+
+app.use(require('connect-flash')());
+app.use(function (req, res, next) {
+  res.locals.messages = require('express-messages')(req, res);
+  next();
+});
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
