@@ -6,6 +6,9 @@ var upload = multer({ dest: './uploads/' }) //Handule Uploads
 
 var user = require('../models/user');
 
+var passport = require('passport');
+var LocalStrategy = require('passport-local').Strategy;
+
 /* GET users listing. */
 router.get('/', function(req, res, next) {
   res.send('respond with a resource');
@@ -16,6 +19,41 @@ router.get('/register', function(req, res, next) {
 
 router.get('/login', function(req, res, next) {
   res.render('login', {title : 'Login'});
+});
+
+router.post('/login', passport.authenticate('local', {failureRedirect: '/users/login',
+            successFlash : 'You are now logged in', failureFlash: 'Invalid username or password.'}),
+  function(req, res){
+    res.redirect('/');
+});
+
+passport.use(new LocalStrategy(function(username, password, done){
+  user.getUserbyUsername(username, function(err, user){
+    console.log(user);
+    if(err) throw err;
+    if(!user){
+      return done(null, false, {message : 'Incorrect UserName'})
+    }
+    user.comparePassword(password, user.password, function(err, isMatch){
+      console.log(isMatch);
+      if(err) return done(err);
+      if(isMatch){
+        return done(null, user);
+      }else{
+        return done(null, false, {message : 'Incorrect Password'});
+      }
+    });
+  });
+}));
+
+passport.serializeUser(function(user, done) {
+  done(null, user.id);
+});
+
+passport.deserializeUser(function(id, done) {
+  user.getUserbyId(id, function(err, user) {
+    done(err, user);
+  });
 });
 
 const { body, validationResult } = require('express-validator');
