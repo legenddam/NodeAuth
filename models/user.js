@@ -31,5 +31,11 @@ var user = module.exports = mongoose.model('user', userSchema);
 
 module.exports.createUser = function(newUser, callback)
 {
-    newUser.save(callback);
-}
+    var bcrypt = require('bcryptjs');
+    bcrypt.genSalt(10, function(err, salt){
+        bcrypt.hash(newUser.password, salt, function(err, hash) {
+            newUser.password = hash;             // Store hash in your password DB.
+            newUser.save(callback);
+        });
+    });
+};

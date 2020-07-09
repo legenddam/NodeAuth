@@ -16,6 +16,8 @@ var flash = require('connect-flash');
 var mongo = require('mongodb');
 var db = require('mongoose');
 
+var bcrypt = require('bcryptjs');
+
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 
