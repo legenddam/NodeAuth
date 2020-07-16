@@ -29,6 +29,12 @@ router.post('/login', passport.authenticate('local', {failureFlash : 'Invalid Us
     res.redirect('/');
 });
 
+router.get('/logout', function(req, res, next){
+  req.logout();
+  req.flash('success','You are now logged out');
+  res.redirect('/users/login');
+});
+
 passport.use(new LocalStrategy(function(username, password, done){
   console.log('passport');
   User.getUserbyUsername(username, function(err, user){
