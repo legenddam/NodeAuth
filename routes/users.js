@@ -4,7 +4,7 @@ var router = express.Router();
 var multer = require('multer');
 var upload = multer({ dest: './uploads/' }) //Handule Uploads
 
-var user = require('../models/user');
+var User = require('../models/user');
 
 var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
@@ -21,20 +21,22 @@ router.get('/login', function(req, res, next) {
   res.render('login', {title : 'Login'});
 });
 
-router.post('/login', passport.authenticate('local', {failureRedirect: '/users/login',
-            successFlash : 'You are now logged in', failureFlash: 'Invalid username or password.'}),
-  function(req, res){
+
+router.post('/login', passport.authenticate('local', {failureFlash : 'Invalid Username or Password', failureRedirect : '/users/login'}), function(req, res){
+    console.log(req.body.username);
+    console.log(req.body.password);
+    req.flash('success', 'You are now in loggedin');
     res.redirect('/');
 });
 
 passport.use(new LocalStrategy(function(username, password, done){
-  user.getUserbyUsername(username, function(err, user){
-    console.log(user);
+  console.log('passport');
+  User.getUserbyUsername(username, function(err, user){
     if(err) throw err;
     if(!user){
       return done(null, false, {message : 'Incorrect UserName'})
     }
-    user.comparePassword(password, user.password, function(err, isMatch){
+    User.comparePassword(password, user.password, function(err, isMatch){
       console.log(isMatch);
       if(err) return done(err);
       if(isMatch){
@@ -51,7 +53,7 @@ passport.serializeUser(function(user, done) {
 });
 
 passport.deserializeUser(function(id, done) {
-  user.getUserbyId(id, function(err, user) {
+  User.getUserbyId(id, function(err, user) {
     done(err, user);
   });
 });
@@ -73,7 +75,6 @@ router.post('/register', upload.single('profileimage'),
   var email = req.body.email;
   var username = req.body.username;
   var password = req.body.password;
-  var password2 = req.body.password2;
 
   if(req.file)
   {
@@ -103,7 +104,7 @@ router.post('/register', upload.single('profileimage'),
     
     req.flash('success','You are now sucecssfully registered and can log in');
 
-    user.createUser(newUser, function(err, user){
+    User.createUser(newUser, function(err, user){
       if(err){
         throw err;
       }
